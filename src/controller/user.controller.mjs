@@ -16,4 +16,25 @@ const createUser = async (req, res) => {
   }
 };
 
-export { createUser };
+const updateUser = async (req, res) => {
+  try {
+    const { name, addressLine1, country, city } = req.body;
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ message: "user not found" });
+    }
+
+    user.name = name;
+    user.addressLine1 = addressLine1;
+    user.country = country;
+    user.city = city;
+
+    await user.save();
+    return res.status(201).send(user);
+  } catch (error) {
+    console.log("updateUser error: ", error);
+    return res.status(500).json({ message: "user update failed." });
+  }
+};
+
+export { createUser, updateUser };
