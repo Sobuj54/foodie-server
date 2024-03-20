@@ -2,7 +2,7 @@ import { body, validationResult } from "express-validator";
 
 const handleValidationErrors = async (req, res, next) => {
   const errors = validationResult(req);
-  if (!errors.notEmpty()) {
+  if (!errors.isEmpty()) {
     return res.status(400).json({ error: errors.array() });
   }
   next();
