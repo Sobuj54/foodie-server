@@ -5,7 +5,7 @@ import {
   updateUser,
 } from "../controller/user.controller.mjs";
 import { jwtCheck, jwtParse } from "../middlewares/auth.middleware.mjs";
-import validateUserRequest from "../middlewares/validation.middleware.mjs";
+import { validateUserRequest } from "../middlewares/validation.middleware.mjs";
 
 const router = Router();
 
