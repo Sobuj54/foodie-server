@@ -7,11 +7,11 @@ import { validateMyRestaurantRequest } from "../middlewares/validation.middlewar
 const router = Router();
 
 router.post(
-  "/create",
+  "/create-restaurant",
+  upload.single("image"),
   validateMyRestaurantRequest,
   jwtCheck,
   jwtParse,
-  upload.single("image"),
   createMyRestaurant
 );
 

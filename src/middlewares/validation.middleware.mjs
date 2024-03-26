@@ -1,8 +1,11 @@
 import { body, validationResult } from "express-validator";
+import fs from "fs";
 
 const handleValidationErrors = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
+    fs.unlinkSync(req.file?.path);
+    console.log(errors.array());
     return res.status(400).json({ error: errors.array() });
   }
   next();
@@ -45,7 +48,9 @@ export const validateMyRestaurantRequest = [
     .isEmpty()
     .withMessage("Cuisines array can not be empty."),
   body("menuItems").isArray().withMessage("Menu items must be an array."),
-  body("menuItems.*.name").isEmpty().withMessage("Menu item name is required."),
+  body("menuItems.*.name")
+    .notEmpty()
+    .withMessage("Menu item name is required."),
   body("menuItems.*.price")
     .isFloat({ min: 0 })
     .withMessage("Menu item price is required and it must be positive."),
