@@ -40,4 +40,41 @@ const getMyRestaurant = async (req, res) => {
   }
 };
 
-export { createMyRestaurant, getMyRestaurant };
+const updateMyRestaurant = async (req, res) => {
+  try {
+    const {
+      restaurantName,
+      city,
+      country,
+      deliveryPrice,
+      estimatedDeliveryTime,
+      cuisines,
+      menuItems,
+    } = req.body;
+    const restaurant = await Restaurant.findOne({ user: req.userId });
+    if (!restaurant) {
+      return res.status(404).json({ message: "Restaurant not found." });
+    }
+
+    restaurant.restaurantName = restaurantName;
+    restaurant.city = city;
+    restaurant.country = country;
+    restaurant.deliveryPrice = deliveryPrice;
+    restaurant.estimatedDeliveryTime = estimatedDeliveryTime;
+    restaurant.cuisines = cuisines;
+    restaurant.menuItems = menuItems;
+
+    if (req.file) {
+      const uploadedImg = await uploadOnCloudinary(req.file.path);
+      restaurant.image = uploadedImg.url;
+    }
+
+    await restaurant.save();
+    return res.status(200).json(restaurant);
+  } catch (error) {
+    console.log("update restaurant err:", error);
+    return res.status(500).json({ message: "Restaurant update failed." });
+  }
+};
+
+export { createMyRestaurant, getMyRestaurant, updateMyRestaurant };
