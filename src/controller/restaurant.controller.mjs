@@ -77,4 +77,77 @@ const updateMyRestaurant = async (req, res) => {
   }
 };
 
-export { createMyRestaurant, getMyRestaurant, updateMyRestaurant };
+const searchRestaurant = async (req, res) => {
+  try {
+    const { city } = req.params;
+    const {
+      searchQuery = "",
+      selectedCuisines = "",
+      sortOption = "updatedAt",
+      page = 1,
+    } = req.query;
+
+    const query = {};
+
+    query["city"] = new RegExp(city, "i");
+    const cityCheck = await Restaurant.countDocuments(query);
+    if (cityCheck === 0) {
+      return res.status(404).json({
+        data: [],
+        pagination: {
+          total: 0,
+          page: 1,
+          pages: 1,
+        },
+      });
+    }
+
+    if (selectedCuisines) {
+      // selectedCuisines = "vhat,dal,dim"  looks like this
+      // [vhat,dal,dim] this is what we will transfer it to
+      const cuisineArray = selectedCuisines
+        .split(",")
+        .map((cuisine) => new RegExp(cuisine, "i"));
+      query["cuisines"] = { $all: cuisineArray };
+    }
+
+    if (searchQuery) {
+      const searchRegex = new RegExp(searchQuery, "i");
+      query["$or"] = [
+        { restaurantName: searchRegex },
+        { cuisines: { $in: [searchRegex] } },
+      ];
+    }
+
+    const limit = 10;
+    const skip = (page - 1) * limit;
+
+    const restaurants = await Restaurant.find(query)
+      .sort({ [sortOption]: 1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    const total = await Restaurant.countDocuments(query);
+    const response = {
+      data: restaurants,
+      pagination: {
+        total,
+        page,
+        pages: Math.ceil(total / limit),
+      },
+    };
+
+    return res.status(200).json(response);
+  } catch (error) {
+    console.log("search restaurant err: ", error);
+    return res.status(500).json({ message: "Restaurant fetch failed." });
+  }
+};
+
+export {
+  createMyRestaurant,
+  getMyRestaurant,
+  updateMyRestaurant,
+  searchRestaurant,
+};
